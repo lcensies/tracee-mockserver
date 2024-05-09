@@ -1,34 +1,15 @@
 FROM golang:1.21.0-alpine AS builder
 
-ARG USER=appuser
-ARG UID=10001  
-RUN adduser \    
-    --disabled-password \    
-    --gecos "" \    
-    --home "/nonexistent" \    
-    --shell "/sbin/nologin" \    
-    --no-create-home \    
-    --uid "${UID}" "${USER}" 
+WORKDIR /app
+COPY . .
+
+RUN go mod download
+RUN go build -o /app/mockserv
+
+FROM alpine:latest
 
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify && mkdir -p /app_dist/data
+COPY --from=builder /app/mockserv .
 
-COPY . . 
-RUN GOOS=linux go build -ldflags="-w -s" -o /bin/mockserv
+CMD ["./mockserv"]
 
-FROM scratch AS release
-
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /bin/mockserv /bin/mockserv
-COPY --from=builder --chown=appuser:appuser /app_dist /app
-
-ENV PORT=8080
-ENV GIN_MODE=release
-EXPOSE $PORT
-
-USER $USER:$USER
-
-ENTRYPOINT ["/bin/mockserv"]
