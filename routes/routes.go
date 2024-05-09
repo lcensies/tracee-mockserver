@@ -17,10 +17,11 @@ func RequestCancelRecover() gin.HandlerFunc {
 
 func NewRouter() *gin.Engine {
 	router := gin.New()
-	router.Use(RequestCancelRecover())
+	router.Use(RequestCancelRecover(), gin.Recovery())
 
 	router.POST("/", HandleEventsSink)
 	router.GET("/", HandleEventsCount)
+	router.GET("/fileevents", HandleFileEventsCount)
 	router.POST("/reset", HandleEventsCountReset)
 
 	return router
