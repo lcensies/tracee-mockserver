@@ -21,7 +21,7 @@ var (
 )
 
 type FileEventsSummary struct {
-	TargetFile   string `json:"filename"`
+	TargetFile   string `json:"pathname"`
 	ProcessImage string `json:"image"`
 	ProcessName  string `json:"process"`
 	EventName    string `json:"event"`
@@ -29,9 +29,10 @@ type FileEventsSummary struct {
 }
 
 var fileEvents map[string]string = map[string]string{
-	"vfs_write": "vfs_write",
-	"vfs_read":  "vfs_read",
-	"vfs_readv": "vfs_readv",
+	"vfs_write":          "vfs_write",
+	"vfs_read":           "vfs_read",
+	"vfs_readv":          "vfs_readv",
+	"security_file_open": "security_file_open",
 }
 
 func getEventTargetFile(e *trace.Event) string {
